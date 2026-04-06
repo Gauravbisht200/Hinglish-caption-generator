@@ -54,6 +54,7 @@ export default function DraggableSubtitleBox() {
 
   // Find which word is currently being spoken
   const getCurrentWordIndex = (words: any[], time: number): number => {
+    if (!words) return -1;
     return words.findIndex(word => time >= word.start && time <= word.end);
   };
 
@@ -93,7 +94,7 @@ export default function DraggableSubtitleBox() {
               isActive = index === currentWordIdx;
             } else {
               // Accumulative mode: highlight all words up to the current one
-              isActive = currentTime >= word.start;
+              isActive = currentTime >= (word.start || 0);
             }
 
             return (
@@ -101,7 +102,7 @@ export default function DraggableSubtitleBox() {
                 key={`${activeSubtitle.id}-word-${index}`}
                 style={{
                   color: isActive ? globalStyle.activeWordColor : globalStyle.textColor,
-                  transition: 'color 0.1s ease-in-out',
+                  transition: 'color 0.15s ease-in-out',
                 }}
               >
                 {word.word}{' '}

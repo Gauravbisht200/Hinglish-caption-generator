@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { EditorState, SubtitleSegment, CaptionStyle, CaptionPosition } from '@/lib/types';
-import { mockSubtitles, defaultCaptionStyle, defaultCaptionPosition } from '@/lib/mockData';
+import { mockSubtitles, defaultCaptionStyle, defaultCaptionPosition, mockProject } from '@/lib/mockData';
 
 interface EditorStore extends EditorState {
   // Playback
@@ -30,7 +30,7 @@ interface EditorStore extends EditorState {
 
 export const useEditorStore = create<EditorStore>((set) => ({
   // Initial state
-  project: null,
+  project: mockProject,
   subtitles: mockSubtitles,
   selectedSubtitleId: null,
   currentTime: 0,
@@ -56,18 +56,24 @@ export const useEditorStore = create<EditorStore>((set) => ({
   })),
   
   updateSubtitleTiming: (id, startTime, endTime) => set((state) => {
-    // Validation: Ensure duration is at least 0.1s
-    const duration = endTime - startTime;
-    if (duration < 0.1) return state;
+    // Validation: No negative duration
+    if (endTime <= startTime) return state;
+    
+    // Validation: Minimum duration 0.1s
+    if (endTime - startTime < 0.1) return state;
 
-    // Optional: Prevent overlaps (simplified)
+    // Validation: Prevent invalid times
+    const validStart = Math.max(0, startTime);
+    const validEnd = Math.max(validStart + 0.1, endTime);
+
     const updatedSubtitles = state.subtitles.map((s) => 
-      s.id === id ? { ...s, startTime, endTime } : s
+      s.id === id ? { ...s, startTime: validStart, endTime: validEnd } : s
     );
 
-    return { subtitles: updatedSubtitles };
+    // Optional: Sort by start time to keep timeline organized
+    return { subtitles: updatedSubtitles.sort((a, b) => a.startTime - b.startTime) };
   }),
-  
+
   addSubtitle: (subtitle) => set((state) => ({
     subtitles: [...state.subtitles, subtitle].sort((a, b) => a.startTime - b.startTime)
   })),

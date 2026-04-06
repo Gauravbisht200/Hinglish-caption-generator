@@ -1,11 +1,28 @@
-<div align="center">
+# Hinglish Caption Studio
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A professional subtitle editor for creating perfect Hinglish captions for your videos.
 
-  <h1>Built with AI Studio</h2>
+## Features (Part 1)
+- Foundation structure with Next.js App Router
+- Realistic Hinglish mock data
+- Comprehensive TypeScript type definitions
+- Polished landing page with custom color palette
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Getting Started
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-</div>
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Project Structure
+- `src/app/`: Next.js App Router pages and layouts
+- `src/lib/`: Shared utilities, types, and constants
+- `src/lib/mockData.ts`: Sample project and subtitle data for testing

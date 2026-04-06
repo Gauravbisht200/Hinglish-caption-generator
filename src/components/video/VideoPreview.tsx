@@ -1,29 +1,106 @@
 /**
  * FILE: src/components/video/VideoPreview.tsx
- * Placeholder for the video preview component
+ * Interactive video player with caption overlay and store synchronization
  */
 
-import React from 'react';
+'use client';
+
+import React, { useRef, useEffect, useState } from 'react';
+import { useEditorStore } from '@/store/editorStore';
+import DraggableSubtitleBox from './DraggableSubtitleBox';
+import SafeAreaGrid from './SafeAreaGrid';
+import PlaybackControls from './PlaybackControls';
+import { mockProject } from '@/lib/mockData';
+import { cn } from '@/lib/utils';
 
 export default function VideoPreview() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { 
+    currentTime, 
+    setCurrentTime, 
+    isPlaying, 
+    setIsPlaying,
+    globalPosition
+  } = useEditorStore();
+
+  // Sync video playback with store isPlaying state
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.play().catch(() => setIsPlaying(false));
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isPlaying, setIsPlaying]);
+
+  // Sync video time when store currentTime changes (e.g., from timeline or transcript)
+  useEffect(() => {
+    if (!videoRef.current) return;
+    // Only sync if the difference is significant to avoid loops
+    if (Math.abs(videoRef.current.currentTime - currentTime) > 0.1) {
+      videoRef.current.currentTime = currentTime;
+    }
+  }, [currentTime]);
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsPlaying(false);
+  };
+
   return (
-    <div className="w-full max-w-4xl aspect-video bg-black rounded-xl flex items-center justify-center shadow-2xl relative overflow-hidden group">
-      {/* Mock Video Content */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-      
-      <div className="text-center space-y-4 z-10">
-        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto border border-white/20 group-hover:scale-110 transition-transform cursor-pointer">
-          <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent ml-1" />
+    <div className="flex flex-col items-center w-full">
+      <div 
+        id="video-container"
+        className="w-full max-w-4xl aspect-video bg-black rounded-xl shadow-2xl relative overflow-hidden group border border-[var(--border)]"
+      >
+        {/* HTML5 Video Element */}
+        <video
+          ref={videoRef}
+          src={mockProject.videoUrl}
+          className="w-full h-full object-contain"
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={handleVideoEnded}
+          onClick={() => setIsPlaying(!isPlaying)}
+        />
+
+        {/* Safe Area Grid Overlay */}
+        <SafeAreaGrid />
+
+        {/* Grid Overlay (Visible when dragging or as a guide) */}
+        <div className="absolute inset-0 pointer-events-none opacity-10 transition-opacity group-hover:opacity-20">
+          <div className="w-full h-full grid grid-cols-12 grid-rows-12">
+            {Array.from({ length: 144 }).map((_, i) => (
+              <div key={i} className="border-[0.5px] border-white/30" />
+            ))}
+          </div>
         </div>
-        <p className="text-white/60 text-sm font-medium tracking-widest uppercase">Video Preview (Part 4)</p>
+
+        {/* Draggable Caption Overlay */}
+        <DraggableSubtitleBox />
+
+        {/* Play/Pause Overlay Indicator */}
+        {!isPlaying && (
+          <div 
+            className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] cursor-pointer"
+            onClick={() => setIsPlaying(true)}
+          >
+            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 scale-110 transition-transform">
+              <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[22px] border-l-white border-b-[12px] border-b-transparent ml-1" />
+            </div>
+          </div>
+        )}
+
+        {/* Safe Area Guides (Optional) */}
+        <div className="absolute inset-[10%] border border-white/10 rounded-lg pointer-events-none border-dashed" />
       </div>
 
-      {/* Mock Caption Overlay */}
-      <div className="absolute bottom-[15%] w-full text-center px-8">
-        <span className="bg-black/45 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-xl font-bold font-caption border border-white/10">
-          Namaste <span className="text-[var(--active-word)]">dosto</span>, aaj hum...
-        </span>
-      </div>
+      {/* Playback Controls */}
+      <PlaybackControls />
     </div>
   );
 }

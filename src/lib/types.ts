@@ -47,6 +47,7 @@ export interface CaptionStyle {
   textAlign: 'left' | 'center' | 'right';
   lineHeight: number;
   maxWidth: number;
+  highlightMode: 'current' | 'accumulative';
 }
 
 // Caption position

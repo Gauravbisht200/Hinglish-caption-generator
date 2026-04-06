@@ -24,6 +24,7 @@ export const defaultCaptionStyle: CaptionStyle = {
   textAlign: 'center',
   lineHeight: 1.4,
   maxWidth: 80,
+  highlightMode: 'current',
 };
 
 export const defaultCaptionPosition: CaptionPosition = {
